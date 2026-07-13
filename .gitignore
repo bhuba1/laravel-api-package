@@ -1,30 +1,50 @@
-/vendor/
-node_modules/
-npm-debug.log
-yarn-error.log
+# Dependencies
+**/vendor/
+**/node_modules/
+**/npm-debug.log
+**/yarn-error.log
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
+# PHP / testing
+**/.phpunit.result.cache
+**/.phpunit.cache
+**/auth.json
 
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
+# Environment
+**/.env
+**/.env.backup
+**/.env.production
 
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
+# IDE
+**/.idea/
+**/.vscode/
+**/.phpactor.json
+**/.zed/
+**/.nova/
+**/.codex/
+**/.cursor/
 
-storage/*.key
-.env
+# Laravel
+**/bootstrap/compiled.php
+**/public/build
+**/public/hot
+**/public/storage
+**/public_html/storage
+**/public_html/hot
+**/storage/*.key
+**/storage/pail
+
+# SQLite (local dev databases)
+*.sqlite
+*.sqlite3
+**/database/*.sqlite*
+
+# Integration test app: published by auth-profile:install on boot
+test-app/database/migrations/*_create_auth_profile_tokens_table.php
+
+# Stray local SQLite DB (extensionless, from misconfigured local runs)
+test-app/auth_profile_test
+
+# Homestead / Vagrant
 Homestead.yaml
 Homestead.json
 /.vagrant
-.phpunit.result.cache
-
-/public/build
-/storage/pail
-.env.backup
-.env.production
-.phpactor.json
-auth.json
