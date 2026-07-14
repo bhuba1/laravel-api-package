@@ -17,6 +17,7 @@ class RateLimitingTest extends DatabaseTestCase
         RateLimiter::clear('auth-profile-register');
         RateLimiter::clear('auth-profile-profile');
         RateLimiter::clear('auth-profile-refresh');
+        RateLimiter::clear('auth-profile-revoke');
     }
 
     public function test_login_is_rate_limited_after_max_attempts(): void

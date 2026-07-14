@@ -88,6 +88,7 @@ class AuthProfilePackageServiceProvider extends ServiceProvider
         if (class_exists(AboutCommand::class)) {
             AboutCommand::add('Auth Profile Package', fn (): array => [
                 'Token TTL' => config('auth-profile-package.token_ttl').' min',
+                'Token Mode' => config('auth-profile-package.tokens.mode', 'single'),
                 'Route Prefix' => config('auth-profile-package.route_prefix'),
                 'User Model' => config('auth-profile-package.user_model'),
                 'Rate Limiting' => config('auth-profile-package.rate_limiting.enabled', true) ? 'enabled' : 'disabled',

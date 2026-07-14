@@ -26,6 +26,10 @@ use Illuminate\Support\Facades\Cache;
  * - {@see \Bhuba\AuthProfilePackage\Models\PersonalAccessToken} for cache hits
  * - {@see self::MISS_SENTINEL} for cache misses (negative caching)
  *
+ * Validity is always re-checked on cache hits via
+ * {@see PersonalAccessToken::isCurrentlyValid()}; expired or revoked tokens
+ * are forgotten and treated as misses.
+ *
  * Invalidation strategy:
  * - {@see self::revoke()} forgets the key derived from the token's stored hash
  * - {@see self::create()} and {@see self::revokeAllFor()} attempt to forget all
@@ -74,7 +78,13 @@ final class CachingTokenRepository implements TokenRepositoryInterface
         }
 
         if ($cached instanceof PersonalAccessToken) {
-            return $cached;
+            if ($cached->isCurrentlyValid()) {
+                return $cached;
+            }
+
+            $this->cache()->forget($cacheKey);
+
+            return null;
         }
 
         $token = $this->inner->findValidToken($plainTextToken);

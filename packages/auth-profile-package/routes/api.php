@@ -16,6 +16,8 @@ Route::prefix((string) config('auth-profile-package.route_prefix'))
             ->middleware('throttle:auth-profile-login');
         Route::post('/tokens/refresh', [TokenController::class, 'refresh'])
             ->middleware(['auth-profile.token', 'throttle:auth-profile-refresh']);
+        Route::post('/tokens/revoke', [TokenController::class, 'revoke'])
+            ->middleware(['auth-profile.token', 'throttle:auth-profile-revoke']);
         Route::get('/profile', [ProfileController::class, 'show'])
             ->middleware(['auth-profile.token', 'throttle:auth-profile-profile']);
     });

@@ -70,11 +70,11 @@ class AuthServiceTest extends TestCase
         $userRepository = $this->mockUserRepository();
         $userRepository->shouldReceive('create')
             ->once()
-            ->with([
-                'name' => 'Jane Doe',
-                'email' => 'jane@example.com',
-                'password' => 'password123',
-            ])
+            ->with(Mockery::on(function (array $attributes): bool {
+                return $attributes['name'] === 'Jane Doe'
+                    && $attributes['email'] === 'jane@example.com'
+                    && Hash::check('password123', (string) $attributes['password']);
+            }))
             ->andReturn($user);
 
         $tokenResponse = new TokenResponse('plain-text-token', '2026-07-10T14:20:00+00:00');
@@ -87,7 +87,11 @@ class AuthServiceTest extends TestCase
 
         $service = new AuthService($userRepository, $tokenService);
 
-        $result = $service->register(new RegisterCredentials('Jane Doe', 'jane@example.com', 'password123'));
+        $result = $service->register(new RegisterCredentials([
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'password' => 'password123',
+        ]));
 
         $this->assertSame($tokenResponse, $result);
     }

@@ -31,8 +31,14 @@ class CachingTokenRepositoryTest extends DatabaseTestCase
 
     public function test_find_valid_token_uses_cache_on_subsequent_lookups(): void
     {
+        $user = $this->createUser(['email' => 'cache-hit@example.com']);
         $plainTextToken = 'cached-token-value-for-testing-purposes';
-        $token = new PersonalAccessToken(['id' => 1, 'token' => hash('sha256', $plainTextToken)]);
+        $token = new PersonalAccessToken([
+            'id' => 1,
+            'token' => hash('sha256', $plainTextToken),
+            'expires_at' => now()->addHour(),
+        ]);
+        $token->setRelation('tokenable', $user);
 
         $inner = $this->mockInnerRepository();
         $inner->shouldReceive('findValidToken')
@@ -48,6 +54,40 @@ class CachingTokenRepositoryTest extends DatabaseTestCase
         $this->assertInstanceOf(PersonalAccessToken::class, $first);
         $this->assertInstanceOf(PersonalAccessToken::class, $second);
         $this->assertSame($first->token, $second->token);
+    }
+
+    public function test_cached_token_rejected_after_expiry(): void
+    {
+        $user = $this->createUser(['email' => 'cache-expiry@example.com']);
+        $plainTextToken = Str::random(40);
+
+        $inner = new TokenRepository();
+        $repository = new CachingTokenRepository($inner);
+
+        $inner->create($user, $plainTextToken, now()->addMinute());
+
+        $this->assertNotNull($repository->findValidToken($plainTextToken));
+
+        $this->travel(2)->minutes();
+
+        $this->assertNull($repository->findValidToken($plainTextToken));
+        $this->assertNull($repository->findValidToken($plainTextToken));
+    }
+
+    public function test_cached_miss_sentinel_still_returns_null(): void
+    {
+        $plainTextToken = Str::random(40);
+
+        $inner = $this->mockInnerRepository();
+        $inner->shouldReceive('findValidToken')
+            ->once()
+            ->with($plainTextToken)
+            ->andReturn(null);
+
+        $repository = new CachingTokenRepository($inner);
+
+        $this->assertNull($repository->findValidToken($plainTextToken));
+        $this->assertNull($repository->findValidToken($plainTextToken));
     }
 
     public function test_revoke_all_for_invalidates_cached_token_lookups(): void

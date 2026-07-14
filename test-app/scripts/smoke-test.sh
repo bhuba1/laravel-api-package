@@ -68,4 +68,22 @@ curl -sf "${BASE_URL}/api/auth-profile/profile" \
   -H "Authorization: Bearer ${register_token}" \
   -H "Accept: application/json" >/dev/null
 
+revoke_status="$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/auth-profile/tokens/revoke" \
+  -H "Authorization: Bearer ${register_token}" \
+  -H "Accept: application/json")"
+
+if [ "${revoke_status}" != "204" ]; then
+  echo "Expected revoke to return 204, got ${revoke_status}"
+  exit 1
+fi
+
+revoked_token_status="$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/auth-profile/profile" \
+  -H "Authorization: Bearer ${register_token}" \
+  -H "Accept: application/json")"
+
+if [ "${revoked_token_status}" != "401" ]; then
+  echo "Expected revoked register token to return 401, got ${revoked_token_status}"
+  exit 1
+fi
+
 echo "Smoke test passed."

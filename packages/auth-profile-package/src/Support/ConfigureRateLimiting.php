@@ -87,5 +87,25 @@ final class ConfigureRateLimiting
                 (int) $settings['max_attempts'],
             )->by($key);
         });
+
+        RateLimiter::for('auth-profile-revoke', static function (Request $request): Limit {
+            if (! config('auth-profile-package.rate_limiting.enabled', true)) {
+                return Limit::none();
+            }
+
+            /** @var array{max_attempts: int, decay_minutes: int} $settings */
+            $settings = config('auth-profile-package.rate_limiting.revoke', [
+                'max_attempts' => 10,
+                'decay_minutes' => 1,
+            ]);
+
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->getAuthIdentifier() : (string) $request->ip();
+
+            return Limit::perMinutes(
+                (int) $settings['decay_minutes'],
+                (int) $settings['max_attempts'],
+            )->by($key);
+        });
     }
 }

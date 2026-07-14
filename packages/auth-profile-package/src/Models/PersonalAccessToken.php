@@ -37,4 +37,13 @@ class PersonalAccessToken extends Model
     {
         return $this->morphTo();
     }
+
+    public function isCurrentlyValid(): bool
+    {
+        if ($this->expires_at !== null && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        return $this->tokenable !== null;
+    }
 }

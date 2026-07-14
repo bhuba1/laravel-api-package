@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "auth-profile-package-collection",
     "name": "Auth Profile Package",
-    "description": "Integration requests for the auth-profile-package API.\n\nDefault base URL: http://localhost:8080 (Docker test app).\n\nSeeded user: test@example.com / password\n\nRun Login or Register first — the package token is saved to the `packageToken` collection variable automatically.",
+    "description": "Integration requests for the auth-profile-package API.\n\nDefault base URL: http://localhost:8080 (Docker test app).\n\nSeeded user: test@example.com / password\n\nRun Login or Register first — the package token is saved to the `packageToken` collection variable automatically.\n\nSuggested flow: Login → Get Profile → Refresh Token → Revoke Token → Get Profile (expect 401).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -225,7 +225,53 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth-profile", "tokens", "refresh"]
             },
-            "description": "Rotate the current package token. The old token is invalidated after a successful response."
+            "description": "Rotate the current package token. In `single` mode (default), all previous tokens for the user are revoked. In `multiple` mode, only the presented bearer token is revoked."
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 204) {",
+                  "    pm.collectionVariables.unset('packageToken');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{packageToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth-profile/tokens/revoke",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth-profile", "tokens", "revoke"]
+            },
+            "description": "Revoke the current package bearer token. Returns 204 No Content. Subsequent requests with the same token receive 401."
           },
           "response": []
         }

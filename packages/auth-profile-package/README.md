@@ -31,14 +31,19 @@ php artisan migrate
 | Key | Default | Description |
 |-----|---------|-------------|
 | `token_ttl` | `60` | Token lifetime in minutes |
+| `tokens.mode` | `single` | `single` = one active token per user; `multiple` = concurrent tokens allowed |
 | `route_prefix` | `api/auth-profile` | API route prefix |
 | `user_model` | `App\Models\User` | Host user model class (must implement `Authenticatable`) |
 | `profile_fields` | `['id', 'name', 'email']` | Fields returned by the profile endpoint |
+| `register_fields` | `['name', 'email', 'password']` | Fields accepted by the register endpoint |
+| `register_password_fields` | `['password']` | Register fields hashed before storage |
+| `register_field_rules` | `[]` | Per-field Laravel validation rule overrides |
 | `rate_limiting.enabled` | `true` | Enable per-endpoint request throttling |
 | `rate_limiting.login` | `5` attempts / `1` min | Login throttle (keyed by IP + email) |
 | `rate_limiting.register` | `5` attempts / `1` min | Register throttle (keyed by IP) |
 | `rate_limiting.profile` | `60` attempts / `1` min | Profile throttle (keyed by user ID) |
 | `rate_limiting.refresh` | `10` attempts / `1` min | Refresh throttle (keyed by user ID) |
+| `rate_limiting.revoke` | `10` attempts / `1` min | Revoke throttle (keyed by user ID) |
 | `caching.store` | `null` | Cache store name (default application cache store) |
 | `caching.profile.enabled` | `false` | Cache profile endpoint responses |
 | `caching.profile.ttl_seconds` | `60` | Profile cache TTL |
@@ -50,9 +55,15 @@ After publishing, the host application may wire environment variables:
 ```php
 return [
     'token_ttl' => env('AUTH_PROFILE_TOKEN_TTL', 60),
+    'tokens' => [
+        'mode' => env('AUTH_PROFILE_TOKEN_MODE', 'single'),
+    ],
     'route_prefix' => env('AUTH_PROFILE_ROUTE_PREFIX', 'api/auth-profile'),
     'user_model' => App\Models\User::class,
     'profile_fields' => ['id', 'name', 'email'],
+    'register_fields' => ['name', 'email', 'password'],
+    'register_password_fields' => ['password'],
+    'register_field_rules' => [],
     'rate_limiting' => [
         'enabled' => env('AUTH_PROFILE_RATE_LIMITING_ENABLED', true),
         // ...
@@ -72,6 +83,26 @@ return [
 ```
 
 Caching requires a configured cache driver in the host application. Rate limiting uses Laravel's cache-backed rate limiter.
+
+### Token modes
+
+- **`single`** (default): login, register, and refresh revoke all previous package tokens for the user before issuing a new one.
+- **`multiple`**: login and register add tokens without revoking others; refresh revokes only the presented bearer token.
+
+Set `AUTH_PROFILE_TOKEN_MODE=multiple` to allow concurrent sessions (e.g. multiple devices).
+
+### Registration fields
+
+Customize accepted register payload fields via `register_fields`. Built-in validation applies for `name`, `email`, and `password`; override any field with `register_field_rules`:
+
+```php
+'register_fields' => ['username', 'email', 'password'],
+'register_field_rules' => [
+    'username' => ['required', 'string', 'max:50', 'alpha_dash'],
+],
+```
+
+Password fields listed in `register_password_fields` are hashed by the package before persistence.
 
 ## Endpoints
 
@@ -122,7 +153,7 @@ Default prefix: `api/auth-profile`
 }
 ```
 
-Login and registration revoke all previous package tokens for that user (rotation).
+Login and registration revoke all previous package tokens for that user when `tokens.mode` is `single` (default).
 
 When rate limiting is exceeded, endpoints return `429` with:
 
@@ -146,6 +177,14 @@ Requires a valid package Bearer token.
   "expires_at": "2026-07-10T15:20:00+00:00"
 }
 ```
+
+### Revoke token
+
+`POST /api/auth-profile/tokens/revoke`
+
+Requires a valid package Bearer token. Revokes the presented token.
+
+**Response `204`:** No content.
 
 ### Profile
 

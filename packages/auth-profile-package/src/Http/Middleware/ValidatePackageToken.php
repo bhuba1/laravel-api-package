@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bhuba\AuthProfilePackage\Http\Middleware;
 
 use Bhuba\AuthProfilePackage\Contracts\TokenRepositoryInterface;
+use Bhuba\AuthProfilePackage\Support\RequestAttributes;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,6 +40,7 @@ final class ValidatePackageToken
         }
 
         $request->setUserResolver(static fn () => $tokenable);
+        $request->attributes->set(RequestAttributes::ACCESS_TOKEN, $accessToken);
 
         return $next($request);
     }

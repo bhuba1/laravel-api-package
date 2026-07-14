@@ -10,6 +10,7 @@ use Bhuba\AuthProfilePackage\Contracts\UserRepositoryInterface;
 use Bhuba\AuthProfilePackage\Data\LoginCredentials;
 use Bhuba\AuthProfilePackage\Data\RegisterCredentials;
 use Bhuba\AuthProfilePackage\Data\TokenResponse;
+use Bhuba\AuthProfilePackage\Support\RegistrationAttributes;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -25,11 +26,9 @@ final class AuthService implements AuthServiceInterface
     public function register(RegisterCredentials $credentials): TokenResponse
     {
         return DB::transaction(function () use ($credentials): TokenResponse {
-            $user = $this->userRepository->create([
-                'name' => $credentials->name,
-                'email' => $credentials->email,
-                'password' => $credentials->password,
-            ]);
+            $user = $this->userRepository->create(
+                RegistrationAttributes::prepare($credentials->attributes),
+            );
 
             return $this->tokenService->issue($user);
         });

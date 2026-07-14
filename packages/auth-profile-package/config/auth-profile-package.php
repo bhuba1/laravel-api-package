@@ -9,13 +9,29 @@ return [
     | Token Time To Live
     |--------------------------------------------------------------------------
     |
-    | The number of minutes that issued package tokens remain valid. A new
-    | token is issued on register, login, and refresh; previous tokens for
-    | the same user are revoked when a new one is created.
+    | The number of minutes that issued package tokens remain valid. Token
+    | rotation behavior on login, register, and refresh is controlled by
+    | tokens.mode (see below).
     |
     */
 
     'token_ttl' => env('AUTH_PROFILE_TOKEN_TTL', 60),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Token Mode
+    |--------------------------------------------------------------------------
+    |
+    | single   - only one active token per user; login/register/refresh revoke
+    |            all previous tokens before issuing a new one.
+    | multiple - login/register add tokens without revoking others; refresh
+    |            revokes only the presented bearer token.
+    |
+    */
+
+    'tokens' => [
+        'mode' => env('AUTH_PROFILE_TOKEN_MODE', 'single'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -56,6 +72,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Registration Fields
+    |--------------------------------------------------------------------------
+    |
+    | Fields accepted by the register endpoint. Built-in validation is applied
+    | per field (email, password, name); override via register_field_rules.
+    | Fields listed in register_password_fields are hashed before storage.
+    |
+    */
+
+    'register_fields' => ['name', 'email', 'password'],
+
+    'register_password_fields' => ['password'],
+
+    'register_field_rules' => [
+        // 'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Rate Limiting
     |--------------------------------------------------------------------------
     |
@@ -80,6 +115,10 @@ return [
             'decay_minutes' => 1,
         ],
         'refresh' => [
+            'max_attempts' => 10,
+            'decay_minutes' => 1,
+        ],
+        'revoke' => [
             'max_attempts' => 10,
             'decay_minutes' => 1,
         ],

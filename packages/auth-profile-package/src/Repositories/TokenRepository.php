@@ -31,15 +31,7 @@ final class TokenRepository implements TokenRepositoryInterface
             ->where('token', $this->hashToken($plainTextToken))
             ->first();
 
-        if ($token === null) {
-            return null;
-        }
-
-        if ($token->expires_at !== null && $token->expires_at->isPast()) {
-            return null;
-        }
-
-        if ($token->tokenable === null) {
+        if ($token === null || ! $token->isCurrentlyValid()) {
             return null;
         }
 
