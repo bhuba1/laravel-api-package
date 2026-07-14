@@ -15,12 +15,12 @@ if [ ! -f .env ] || ! grep -q '^DB_HOST=mysql' .env 2>/dev/null; then
   fi
 fi
 
-if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
-  php artisan key:generate --force
-fi
-
 if [ ! -d vendor ]; then
   composer install --no-interaction --prefer-dist
+fi
+
+if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then
+  php artisan key:generate --force
 fi
 
 echo "Waiting for MySQL..."
