@@ -48,10 +48,10 @@ curl -s -X POST http://localhost:8080/api/auth-profile/tokens/refresh \
   -H "Accept: application/json"
 
 # 4. Revoke package token
-curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/api/auth-profile/tokens/revoke \
+curl -s -X POST http://localhost:8080/api/auth-profile/tokens/revoke \
   -H "Authorization: Bearer {package-token}" \
   -H "Accept: application/json"
-# Expected: 204
+# Expected: {"message":"Token revoked."}
 
 # 5. Register a new user
 curl -s -X POST http://localhost:8080/api/auth-profile/register \

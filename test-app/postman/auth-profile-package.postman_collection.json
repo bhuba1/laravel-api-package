@@ -236,11 +236,15 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status is 204 No Content', function () {",
-                  "    pm.response.to.have.status(204);",
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "if (pm.response.code === 204) {",
+                  "pm.test('Response confirms revocation', function () {",
+                  "    pm.expect(pm.response.json()).to.eql({ message: 'Token revoked.' });",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
                   "    pm.collectionVariables.unset('packageToken');",
                   "}"
                 ],
@@ -271,7 +275,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth-profile", "tokens", "revoke"]
             },
-            "description": "Revoke the current package bearer token. Returns 204 No Content. Subsequent requests with the same token receive 401."
+            "description": "Revoke the current package bearer token. Returns 200 with a JSON confirmation. Subsequent requests with the same token receive 401."
           },
           "response": []
         }

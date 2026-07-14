@@ -22,7 +22,8 @@ class RevokeTokenTest extends DatabaseTestCase
             '/api/auth-profile/tokens/revoke',
             [],
             $this->bearerHeaders($plainTextToken),
-        )->assertNoContent();
+        )->assertOk()
+            ->assertJson(['message' => 'Token revoked.']);
 
         $this->getJson('/api/auth-profile/profile', $this->bearerHeaders($plainTextToken))
             ->assertUnauthorized();

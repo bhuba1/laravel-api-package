@@ -72,8 +72,8 @@ revoke_status="$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api
   -H "Authorization: Bearer ${register_token}" \
   -H "Accept: application/json")"
 
-if [ "${revoke_status}" != "204" ]; then
-  echo "Expected revoke to return 204, got ${revoke_status}"
+if [ "${revoke_status}" != "200" ]; then
+  echo "Expected revoke to return 200, got ${revoke_status}"
   exit 1
 fi
 

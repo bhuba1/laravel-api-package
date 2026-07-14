@@ -184,7 +184,13 @@ Requires a valid package Bearer token.
 
 Requires a valid package Bearer token. Revokes the presented token.
 
-**Response `204`:** No content.
+**Response `200`:**
+
+```json
+{
+  "message": "Token revoked."
+}
+```
 
 ### Profile
 

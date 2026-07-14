@@ -10,7 +10,6 @@ use Bhuba\AuthProfilePackage\Support\RequestAttributes;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 final class TokenController
 {
@@ -30,7 +29,7 @@ final class TokenController
         ));
     }
 
-    public function revoke(Request $request, TokenServiceInterface $tokenService): Response|JsonResponse
+    public function revoke(Request $request, TokenServiceInterface $tokenService): JsonResponse
     {
         $user = $request->user();
 
@@ -46,6 +45,6 @@ final class TokenController
 
         $tokenService->revoke($currentToken);
 
-        return response()->noContent();
+        return response()->json(['message' => 'Token revoked.']);
     }
 }
