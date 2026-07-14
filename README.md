@@ -47,11 +47,21 @@ curl -s -X POST http://localhost:8080/api/auth-profile/tokens/refresh \
   -H "Authorization: Bearer {package-token}" \
   -H "Accept: application/json"
 
-# 4. Register a new user
+# 4. Revoke package token
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/api/auth-profile/tokens/revoke \
+  -H "Authorization: Bearer {package-token}" \
+  -H "Accept: application/json"
+# Expected: 204
+
+# 5. Register a new user
 curl -s -X POST http://localhost:8080/api/auth-profile/register \
   -H "Content-Type: application/json" \
   -d '{"name":"New User","email":"new@example.com","password":"password123"}'
 ```
+
+### Postman collection
+
+Import [`test-app/postman/auth-profile-package.postman_collection.json`](test-app/postman/auth-profile-package.postman_collection.json) into Postman (File → Import, or drag the file into the app). The collection uses `baseUrl` `http://localhost:8080` and saves the package token to `packageToken` after Login or Register. Run requests in order: Login → Get Profile → Refresh Token → Revoke Token.
 
 ### Smoke test
 
