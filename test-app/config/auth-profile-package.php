@@ -47,6 +47,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Auth Guard
+    |--------------------------------------------------------------------------
+    |
+    | When package token middleware authenticates a request, the resolved user
+    | is also set on this guard via Auth::setUser(). Leave null to use the host
+    | application's default guard. Use a dedicated guard name (e.g.
+    | auth-profile) if you want to keep package token auth separate from web
+    | session authentication.
+    |
+    */
+
+    'auth_guard' => env('AUTH_PROFILE_AUTH_GUARD'),
+
+    /*
+    |--------------------------------------------------------------------------
     | User Model
     |--------------------------------------------------------------------------
     |

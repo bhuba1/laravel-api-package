@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "auth-profile-package-collection",
     "name": "Auth Profile Package",
-    "description": "Integration requests for the auth-profile-package API.\n\nDefault base URL: http://localhost:8080 (Docker test app).\n\nSeeded user: test@example.com / password\n\nRun Login or Register first — the package token is saved to the `packageToken` collection variable automatically.\n\nSuggested flow: Login → Get Profile → Refresh Token → Revoke Token → Get Profile (expect 401).",
+    "description": "Integration requests for the auth-profile-package API.\n\nDefault base URL: http://localhost:8080 (Docker test app).\n\nSeeded user: test@example.com / password\n\nRun Login or Register first — the package token is saved to the `packageToken` collection variable automatically.\n\nSuggested flow: Login → Get Profile → Host Get Me → Refresh Token → Revoke Token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -166,6 +166,60 @@
               "path": ["api", "auth-profile", "profile"]
             },
             "description": "Return the authenticated user's profile. Requires a valid package Bearer token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Host App",
+      "item": [
+        {
+          "name": "Get Me (host middleware)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains authenticated user ids', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('auth_id');",
+                  "    pm.expect(json.id).to.eql(json.auth_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{packageToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "me"]
+            },
+            "description": "Host-owned route in test-app protected by the auth-profile.token middleware. Demonstrates using package tokens on custom host endpoints."
           },
           "response": []
         }

@@ -8,6 +8,7 @@ use Bhuba\AuthProfilePackage\Contracts\TokenRepositoryInterface;
 use Bhuba\AuthProfilePackage\Support\RequestAttributes;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ValidatePackageToken
@@ -41,6 +42,14 @@ final class ValidatePackageToken
 
         $request->setUserResolver(static fn () => $tokenable);
         $request->attributes->set(RequestAttributes::ACCESS_TOKEN, $accessToken);
+
+        $guard = config('auth-profile-package.auth_guard');
+
+        if (is_string($guard) && $guard !== '') {
+            Auth::guard($guard)->setUser($tokenable);
+        } else {
+            Auth::setUser($tokenable);
+        }
 
         return $next($request);
     }

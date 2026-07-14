@@ -33,6 +33,7 @@ php artisan migrate
 | `token_ttl` | `60` | Token lifetime in minutes |
 | `tokens.mode` | `single` | `single` = one active token per user; `multiple` = concurrent tokens allowed |
 | `route_prefix` | `api/auth-profile` | API route prefix |
+| `auth_guard` | `null` | Guard to set via `Auth::setUser()` when middleware authenticates (default guard if null) |
 | `user_model` | `App\Models\User` | Host user model class (must implement `Authenticatable`) |
 | `profile_fields` | `['id', 'name', 'email']` | Fields returned by the profile endpoint |
 | `register_fields` | `['name', 'email', 'password']` | Fields accepted by the register endpoint |
@@ -59,6 +60,7 @@ return [
         'mode' => env('AUTH_PROFILE_TOKEN_MODE', 'single'),
     ],
     'route_prefix' => env('AUTH_PROFILE_ROUTE_PREFIX', 'api/auth-profile'),
+    'auth_guard' => env('AUTH_PROFILE_AUTH_GUARD'),
     'user_model' => App\Models\User::class,
     'profile_fields' => ['id', 'name', 'email'],
     'register_fields' => ['name', 'email', 'password'],
@@ -207,6 +209,33 @@ Requires a valid package Bearer token. Returns fields configured in `profile_fie
   "email": "jane@example.com"
 }
 ```
+
+## Host application middleware
+
+The package registers the `auth-profile.token` middleware alias. Apply it to any host route that should accept a package Bearer token:
+
+```php
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('auth-profile.token')->get('/me', function (Request $request) {
+    return response()->json([
+        'id' => $request->user()?->getAuthIdentifier(),
+        'auth_id' => Auth::id(),
+    ]);
+});
+```
+
+The middleware:
+
+- validates the package token from the `Authorization: Bearer` header
+- sets `$request->user()` to the configured `user_model`
+- sets `Auth::user()` on `auth_guard` (or the host default guard when `auth_guard` is null)
+
+Only package tokens issued by this package are accepted — not Sanctum tokens or web session cookies.
+
+The integration test app includes a working example at `GET /api/me` in [`test-app/routes/api.php`](../../test-app/routes/api.php).
 
 ## Extending
 

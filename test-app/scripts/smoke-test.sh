@@ -26,6 +26,12 @@ profile_response="$(curl -sf "${BASE_URL}/api/auth-profile/profile" \
 
 echo "Profile: ${profile_response}"
 
+host_me_response="$(curl -sf "${BASE_URL}/api/me" \
+  -H "Authorization: Bearer ${package_token}" \
+  -H "Accept: application/json")"
+
+echo "Host /api/me: ${host_me_response}"
+
 refresh_response="$(curl -sf -X POST "${BASE_URL}/api/auth-profile/tokens/refresh" \
   -H "Authorization: Bearer ${package_token}" \
   -H "Accept: application/json")"

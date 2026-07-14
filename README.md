@@ -8,7 +8,7 @@ Monorepo for Laravel API packages and an integration test harness.
 
 ## Integration test app
 
-The [`test-app/`](test-app/) directory is a Laravel host application linked to the local package via Composer path repository. Use it to exercise the full HTTP flow (package login/register → package token → profile/refresh).
+The [`test-app/`](test-app/) directory is a Laravel host application linked to the local package via Composer path repository. Use it to exercise the full HTTP flow (package login/register → package token → profile/refresh) and a host-owned route (`GET /api/me`) protected by the `auth-profile.token` middleware.
 
 ### Prerequisites
 
@@ -39,6 +39,11 @@ curl -s -X POST http://localhost:8080/api/auth-profile/login \
 
 # 2. Profile
 curl -s http://localhost:8080/api/auth-profile/profile \
+  -H "Authorization: Bearer {package-token}" \
+  -H "Accept: application/json"
+
+# 2b. Host route protected by package middleware (GET /api/me)
+curl -s http://localhost:8080/api/me \
   -H "Authorization: Bearer {package-token}" \
   -H "Accept: application/json"
 
