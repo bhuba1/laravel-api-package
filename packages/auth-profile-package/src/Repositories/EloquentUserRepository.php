@@ -14,6 +14,12 @@ final class EloquentUserRepository implements UserRepositoryInterface
         private readonly UserModelResolverInterface $userModelResolver,
     ) {}
 
+    /**
+     * Finds a user by email.
+     *
+     * @param string $email
+     * @return Authenticatable|null
+     */
     public function findByEmail(string $email): ?Authenticatable
     {
         return $this->userModelResolver->query()->where('email', $email)->first();
@@ -21,6 +27,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
 
     /**
      * @param  array<string, mixed>  $attributes
+     * @return Authenticatable
      */
     public function create(array $attributes): Authenticatable
     {

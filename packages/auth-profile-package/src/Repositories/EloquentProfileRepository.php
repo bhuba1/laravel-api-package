@@ -10,9 +10,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 final class EloquentProfileRepository implements ProfileRepositoryInterface
 {
     /**
+     * Builds a profile array from the authenticatable model.
      * @return array<string, mixed>
      */
-    public function buildFor(Authenticatable $user): array
+    public function buildProfileArray(Authenticatable $user): array
     {
         $profile = [];
 
@@ -30,6 +31,11 @@ final class EloquentProfileRepository implements ProfileRepositoryInterface
     }
 
     /**
+     * Resolves the configured profile fields from the config.
+     * The configured fields are used to build the profile array.
+     *
+     * @see self::buildProfileArray()
+     *
      * @return list<string>
      */
     private function configuredFields(): array
@@ -40,8 +46,7 @@ final class EloquentProfileRepository implements ProfileRepositoryInterface
             return ['id', 'name', 'email'];
         }
 
-        $normalized = [];
-
+        $normalized = []; 
         foreach ($fields as $field) {
             if (is_string($field) && $field !== '') {
                 $normalized[] = $field;

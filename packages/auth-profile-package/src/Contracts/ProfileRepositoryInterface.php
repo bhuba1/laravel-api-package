@@ -11,5 +11,5 @@ interface ProfileRepositoryInterface
     /**
      * @return array<string, mixed>
      */
-    public function buildFor(Authenticatable $user): array;
+    public function buildProfileArray(Authenticatable $user): array;
 }

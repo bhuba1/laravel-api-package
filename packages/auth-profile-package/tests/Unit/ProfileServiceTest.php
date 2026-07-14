@@ -23,7 +23,7 @@ class ProfileServiceTest extends TestCase
         $profile = ['id' => 1, 'name' => 'Jane Doe', 'email' => 'jane@example.com'];
 
         $profileRepository = $this->mockProfileRepository();
-        $profileRepository->shouldReceive('buildFor')
+        $profileRepository->shouldReceive('buildProfileArray')
             ->once()
             ->with($user)
             ->andReturn($profile);
@@ -49,7 +49,7 @@ class ProfileServiceTest extends TestCase
         $user->id = 1;
 
         $profileRepository = $this->mockProfileRepository();
-        $profileRepository->shouldReceive('buildFor')
+        $profileRepository->shouldReceive('buildProfileArray')
             ->once()
             ->with($user)
             ->andReturn(['id' => 1, 'name' => 'Jane Doe']);

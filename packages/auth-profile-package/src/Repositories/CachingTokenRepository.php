@@ -11,6 +11,34 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * TokenRepository decorator that caches token validation results.
+ *
+ * This repository exists to reduce repeated DB lookups performed by
+ * `ValidatePackageToken` middleware. When enabled via
+ * `auth-profile-package.caching.token_validation.enabled`, calls to
+ * {@see self::findValidToken()} cache both hits and misses for a short TTL.
+ *
+ * Cache key format:
+ * - `auth-profile-package:token:{sha256(plainTextToken)}`
+ *
+ * Values stored:
+ * - {@see \Bhuba\AuthProfilePackage\Models\PersonalAccessToken} for cache hits
+ * - {@see self::MISS_SENTINEL} for cache misses (negative caching)
+ *
+ * Invalidation strategy:
+ * - {@see self::revoke()} forgets the key derived from the token's stored hash
+ * - {@see self::create()} and {@see self::revokeAllFor()} attempt to forget all
+ *   cached tokens belonging to the user by querying `auth_profile_tokens`
+ *
+ * Notes / trade-offs:
+ * - Negative caching can briefly cache invalid tokens; keep TTL low.
+ * - User model changes can leave cached token->tokenable stale until TTL expiry
+ *   (consider optional invalidation on user updates if token cache is enabled).
+ * - Invalidation on revokeAllFor/create requires a DB query to enumerate tokens
+ *   for the user; this is acceptable since these paths are much less frequent
+ *   than token validation reads.
+ */
 final class CachingTokenRepository implements TokenRepositoryInterface
 {
     private const string MISS_SENTINEL = '__auth_profile_token_miss__';

@@ -23,7 +23,7 @@ final class ProfileService implements ProfileServiceInterface
     {
         return $this->profileResponseCache->remember(
             $user,
-            fn (): array => $this->profileRepository->buildFor($user),
+            fn (): array => $this->profileRepository->buildProfileArray($user),
         );
     }
 }

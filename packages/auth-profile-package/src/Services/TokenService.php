@@ -9,6 +9,7 @@ use Bhuba\AuthProfilePackage\Contracts\TokenServiceInterface;
 use Bhuba\AuthProfilePackage\Data\TokenResponse;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class TokenService implements TokenServiceInterface
@@ -19,17 +20,19 @@ final class TokenService implements TokenServiceInterface
 
     public function issue(Authenticatable $user): TokenResponse
     {
-        $this->tokenRepository->revokeAllFor($user);
+        return DB::transaction(function () use ($user): TokenResponse {
+            $this->tokenRepository->revokeAllFor($user);
 
-        $plainTextToken = Str::random(40);
-        $expiresAt = $this->resolveExpiresAt();
+            $plainTextToken = Str::random(40);
+            $expiresAt = $this->resolveExpiresAt();
 
-        $this->tokenRepository->create($user, $plainTextToken, $expiresAt);
+            $this->tokenRepository->create($user, $plainTextToken, $expiresAt);
 
-        return new TokenResponse(
-            token: $plainTextToken,
-            expiresAt: $expiresAt->toIso8601String(),
-        );
+            return new TokenResponse(
+                token: $plainTextToken,
+                expiresAt: $expiresAt->toIso8601String(),
+            );
+        });
     }
 
     public function refresh(Authenticatable $user): TokenResponse

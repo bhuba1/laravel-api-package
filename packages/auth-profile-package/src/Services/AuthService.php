@@ -11,6 +11,7 @@ use Bhuba\AuthProfilePackage\Data\LoginCredentials;
 use Bhuba\AuthProfilePackage\Data\RegisterCredentials;
 use Bhuba\AuthProfilePackage\Data\TokenResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -23,15 +24,22 @@ final class AuthService implements AuthServiceInterface
 
     public function register(RegisterCredentials $credentials): TokenResponse
     {
-        $user = $this->userRepository->create([
-            'name' => $credentials->name,
-            'email' => $credentials->email,
-            'password' => $credentials->password,
-        ]);
+        return DB::transaction(function () use ($credentials): TokenResponse {
+            $user = $this->userRepository->create([
+                'name' => $credentials->name,
+                'email' => $credentials->email,
+                'password' => $credentials->password,
+            ]);
 
-        return $this->tokenService->issue($user);
+            return $this->tokenService->issue($user);
+        });
     }
-
+   
+    /**
+     * @param LoginCredentials $credentials
+     * @return TokenResponse
+     * @throws ValidationException
+   */
     public function login(LoginCredentials $credentials): TokenResponse
     {
         $user = $this->userRepository->findByEmail($credentials->email);

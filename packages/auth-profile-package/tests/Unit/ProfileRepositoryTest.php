@@ -33,7 +33,7 @@ class ProfileRepositoryTest extends TestCase
             'id' => 42,
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
-        ], $this->repository->buildFor($user));
+        ], $this->repository->buildProfileArray($user));
     }
 
     public function test_build_for_ignores_invalid_field_entries(): void
@@ -49,7 +49,7 @@ class ProfileRepositoryTest extends TestCase
         $this->assertSame([
             'id' => 42,
             'name' => 'Jane Doe',
-        ], $this->repository->buildFor($user));
+        ], $this->repository->buildProfileArray($user));
     }
 
     public function test_build_for_falls_back_to_default_fields_when_config_is_invalid(): void
@@ -66,6 +66,6 @@ class ProfileRepositoryTest extends TestCase
             'id' => 42,
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
-        ], $this->repository->buildFor($user));
+        ], $this->repository->buildProfileArray($user));
     }
 }
